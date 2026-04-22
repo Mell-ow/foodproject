@@ -1,0 +1,113 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply antialiased text-zan-dark bg-zan-cream;
+    font-family: 'DM Sans', 'Inter', sans-serif;
+  }
+
+  h1, h2, h3 {
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+
+  h4, h5, h6, button, label {
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  * {
+    @apply scroll-smooth;
+  }
+}
+
+@layer utilities {
+  .glassmorphism {
+    @apply bg-white/80 backdrop-blur-md border border-white/30 shadow-lg;
+  }
+  .glassmorphism-dark {
+    @apply bg-gray-900/80 backdrop-blur-md border border-gray-700/50 shadow-lg text-white;
+  }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  .text-gradient-teal {
+    background: linear-gradient(135deg, #1a6b5a, #2d9b86);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .text-gradient-gold {
+    background: linear-gradient(135deg, #f5c518, #e4a800);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+/* --- Brand Animations --- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInRight {
+  from { transform: translateX(30px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+@keyframes bounceSlow {
+  0%, 100% { transform: scale(1);   }
+  50%       { transform: scale(1.1); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+@keyframes heroFloat {
+  0%, 100% { transform: translateY(0px);   }
+  50%       { transform: translateY(-6px);  }
+}
+
+.animate-fade-in      { animation: fadeIn 0.4s ease-out forwards; }
+.animate-slide-right  { animation: slideInRight 0.4s ease-out forwards; }
+.animate-bounce-slow  { animation: bounceSlow 0.3s ease-in-out; }
+.animate-hero-float   { animation: heroFloat 4s ease-in-out infinite; }
+.animate-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+
+/* Staggered fade in helpers */
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+
+/* --- Reservation page theme --- */
+:root {
+  --res-primary:  #1a6b5a;
+  --res-gold:     #f5c518;
+  --res-success:  #2ECC71;
+  --res-bg-warm:  #fdf8f0;
+}
+
+.bg-res-warm       { background-color: var(--res-bg-warm)  !important; }
+.text-res-primary  { color:            var(--res-primary)  !important; }
+.bg-res-primary    { background-color: var(--res-primary)  !important; }
+.border-res-primary{ border-color:     var(--res-primary)  !important; }
+.text-res-success  { color:            var(--res-success)  !important; }
+
+/* Pill skeleton loader */
+.skeleton {
+  background: linear-gradient(90deg, #e8e0d0 25%, #f5ede0 50%, #e8e0d0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: 12px;
+}
+
+/* Food card hover image zoom */
+.food-card-img { transition: transform 0.5s cubic-bezier(.25,.8,.25,1); }
+.food-card:hover .food-card-img { transform: scale(1.08); }
