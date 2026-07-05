@@ -30,7 +30,7 @@ const useUnsplash = (itemName, category) => {
     }
 
     const KEY = process.env.REACT_APP_UNSPLASH_KEY;
-    if (!KEY) {
+    if (!KEY || KEY === 'your_unsplash_access_key_here') {
       setLoading(false);
       return;
     }

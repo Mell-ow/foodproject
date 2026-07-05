@@ -22,7 +22,7 @@ function MenuGrid({ title, subtitle, items, onAddToCart }) {
               }}
             />
             <h3>{item.name}</h3>
-            <p className="price">Rs. {item.price}</p>
+            <p className="price">₹ {item.price}</p>
             <button type="button" onClick={() => onAddToCart(item.id)}>
               Add to Cart
             </button>

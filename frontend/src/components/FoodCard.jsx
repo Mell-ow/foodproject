@@ -3,6 +3,7 @@ import { Plus, Leaf } from 'lucide-react';
 import useCartStore from '../store/useCartStore';
 import useMenuStore from '../store/useMenuStore';
 import useUnsplash from '../hooks/useUnsplash';
+import { findImageForItem, getByFilename } from '../assets';
 import toast from 'react-hot-toast';
 
 // Curated Unsplash fallback images per category (no API needed)
@@ -33,7 +34,13 @@ const FoodCard = ({ item }) => {
     }
   }, [imageUrl, item.id, cached, setImageCache]);
 
+  // Prefer explicit local asset from menu data, then auto-match, then cached/Unsplash/fallback
+  const explicitAsset = item.image ? getByFilename(item.image) : null;
+  const autoAsset = findImageForItem(item.name, item.category);
+
   const displayImage =
+    explicitAsset ||
+    autoAsset ||
     cached ||
     imageUrl ||
     FALLBACKS[item.category] ||

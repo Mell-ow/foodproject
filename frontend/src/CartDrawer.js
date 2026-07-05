@@ -36,7 +36,7 @@ function CartDrawer({
                 <div className="cart-item" key={item.id}>
                   <div>
                     <h4>{item.name}</h4>
-                    <p>Rs. {item.price}</p>
+                    <p>₹ {item.price}</p>
                   </div>
 
                   <div className="cart-actions">
@@ -56,7 +56,7 @@ function CartDrawer({
             </div>
 
             <div className="cart-footer">
-              <p>Total: Rs. {total}</p>
+              <p>Total: ₹ {total}</p>
               <button type="button" className="secondary" onClick={onClear}>
                 Clear Cart
               </button>

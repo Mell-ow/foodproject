@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const preBookedItemSchema = new mongoose.Schema({
-  menuItemId: { type: mongoose.Schema.Types.ObjectId, ref: 'MenuItem' },
+  menuItemId: { type: String },
   name: { type: String, required: true },
   quantity: { type: Number, required: true },
   price: { type: Number, required: true }
@@ -9,7 +9,7 @@ const preBookedItemSchema = new mongoose.Schema({
 
 const reservationSchema = new mongoose.Schema({
   reservationId: { type: String, unique: true, required: true },
-  tableNumber: { type: Number, required: true, min: 1, max: 6 },
+  tableNumber: { type: Number, required: true, min: 1, max: 10 },
   date: { type: Date, required: true },
   timeSlot: { type: String, required: true },
   customerName: { type: String, required: true },
@@ -21,5 +21,11 @@ const reservationSchema = new mongoose.Schema({
   razorpayPaymentId: { type: String },
   status: { type: String, enum: ['confirmed', 'cancelled', 'completed'], default: 'confirmed' }
 }, { timestamps: true });
+
+// Ensure at most one confirmed reservation per date+timeSlot+tableNumber
+reservationSchema.index(
+  { date: 1, timeSlot: 1, tableNumber: 1 },
+  { unique: true, partialFilterExpression: { status: 'confirmed' } }
+);
 
 module.exports = mongoose.model('Reservation', reservationSchema);

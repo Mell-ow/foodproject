@@ -108,10 +108,10 @@ const CartDrawer = ({ isOpen, onClose }) => {
                     </button>
                   </div>
                   <p className="text-zan-teal font-bold text-sm mt-0.5">
-                    ₹{item.price}
+                    ₹{Number(item.price).toFixed(2)}
                     {item.qty > 1 && (
                       <span className="text-gray-400 font-normal ml-1 text-xs">
-                        × {item.qty} = ₹{item.price * item.qty}
+                        × {item.qty} = ₹{(item.price * item.qty).toFixed(2)}
                       </span>
                     )}
                   </p>
@@ -145,7 +145,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
             <div className="flex justify-between items-center px-1">
               <span className="text-gray-500 font-medium">Grand Total</span>
               <span className="text-2xl font-playfair font-bold text-zan-teal">
-                ₹{getTotalAmount()}
+                ₹{getTotalAmount().toFixed(2)}
               </span>
             </div>
 

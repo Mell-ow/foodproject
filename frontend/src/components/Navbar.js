@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { ShoppingCart, User, Menu as MenuIcon, X, UtensilsCrossed } from 'lucide-react';
+import { ShoppingCart, User, Menu as MenuIcon, X, UtensilsCrossed, ShieldCheck } from 'lucide-react';
 import useCartStore from '../store/useCartStore';
 
 const NAV_LINKS = [
@@ -68,12 +68,23 @@ const Navbar = ({ toggleCart }) => {
               )}
             </button>
 
+            {/* Admin Portal Shortcut */}
+            <button
+              onClick={() => navigate('/admin/dashboard')}
+              className="p-2.5 rounded-xl text-gray-600 hover:text-primary-600 hover:bg-primary-50 transition-colors"
+              aria-label="Admin Portal"
+              title="Admin Console"
+            >
+              <ShieldCheck size={22} />
+            </button>
+
             {/* Profile */}
             <button
               onClick={() => navigate('/profile')}
               id="profile-btn"
               className="p-2.5 rounded-xl text-gray-600 hover:text-zan-teal hover:bg-primary-50 transition-colors"
               aria-label="Go to profile"
+              title="Customer Profile"
             >
               <User size={22} />
             </button>

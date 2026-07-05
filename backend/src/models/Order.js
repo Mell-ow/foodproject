@@ -13,7 +13,10 @@ const orderSchema = new mongoose.Schema({
     state: String,
     zipCode: String
   },
-  totalAmount: { type: Number, required: true },
+  subtotal: { type: Number, required: true }, // Items total before taxes/fees
+  taxAmount: { type: Number, required: true }, // Tax charged (5% GST)
+  deliveryCharge: { type: Number, default: 0 }, // Delivery fee
+  totalAmount: { type: Number, required: true }, // Final total: subtotal + tax + delivery - discount
   discount: { type: Number, default: 0 },
   couponApplied: { type: mongoose.Schema.Types.ObjectId, ref: 'Coupon' },
   paymentStatus: { type: String, enum: ['pending', 'paid', 'failed'], default: 'pending' },

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order');
+const { calculateOrderTotal, validateOrderTotal } = require('../utils/orderCalculations');
 
 // @route GET /api/order/:id
 // @desc Get order details and track status
@@ -19,16 +20,27 @@ router.get('/:id', async (req, res) => {
     console.error(error);
     // In dev mode with mocked IDs, return a fake order if not found
     if (req.params.id.startsWith('mock')) {
+      const mockItems = [
+        { menuItem: { name: 'Margherita Pizza', price: 349 }, quantity: 2 },
+        { menuItem: { name: 'Garlic Butter Fries', price: 149 }, quantity: 1 }
+      ];
+      
+      // Properly calculate total
+      const itemsSubtotal = mockItems.reduce((sum, item) => sum + (item.menuItem.price * item.quantity), 0);
+      const taxAmount = Math.round(itemsSubtotal * 0.05); // 5% tax
+      const deliveryCharge = 50; // ₹50 delivery
+      const calculatedTotal = itemsSubtotal + taxAmount + deliveryCharge;
+      
       return res.json({
         order: {
           _id: req.params.id,
           orderStatus: 'Preparing',
           orderType: 'delivery',
-          totalAmount: 45.99,
-          items: [
-            { menuItem: { name: 'Margherita Pizza', price: 12.99 }, quantity: 2 },
-            { menuItem: { name: 'Garlic Bread', price: 5.99 }, quantity: 1 }
-          ],
+          subtotal: itemsSubtotal,
+          taxAmount: taxAmount,
+          deliveryCharge: deliveryCharge,
+          totalAmount: calculatedTotal,
+          items: mockItems,
           statusTimestamps: {
             placedAt: new Date(Date.now() - 1000 * 60 * 15),
             confirmedAt: new Date(Date.now() - 1000 * 60 * 10),

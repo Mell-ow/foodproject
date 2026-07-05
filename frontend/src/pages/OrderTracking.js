@@ -161,9 +161,57 @@ const OrderTracking = () => {
          <h3 className="font-bold text-gray-900 mb-4 font-outfit">Order Details</h3>
          <div className="flex justify-between items-center text-sm mb-4">
             <span className="text-gray-500">Total Amount</span>
-            <span className="font-bold text-xl">${order.totalAmount?.toFixed(2) || '45.99'}</span>
+            <span className="font-bold text-2xl text-amber-600">₹{order.totalAmount?.toFixed(2) || (order.subtotal || 0).toFixed(2)}</span>
          </div>
          <p className="text-sm text-gray-500">Live socket connection is active. The tracker will advance automatically as the Kitchen operations complete your order.</p>
+         
+         {/* Price Breakdown */}
+         <div className="space-y-3 mb-6 pb-6 border-b border-gray-200">
+            {order.subtotal !== undefined && (
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Subtotal (Items)</span>
+                <span className="font-medium">₹{(order.subtotal || 0).toFixed(2)}</span>
+              </div>
+            )}
+            {order.taxAmount !== undefined && (
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Tax (5% GST)</span>
+                <span className="font-medium">₹{(order.taxAmount || 0).toFixed(2)}</span>
+              </div>
+            )}
+            {order.deliveryCharge !== undefined && order.deliveryCharge > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Delivery Charge</span>
+                <span className="font-medium">₹{(order.deliveryCharge || 0).toFixed(2)}</span>
+              </div>
+            )}
+            {order.discount !== undefined && order.discount > 0 && (
+              <div className="flex justify-between text-sm text-green-600">
+                <span>Discount Applied</span>
+                <span className="font-medium">-₹{(order.discount || 0).toFixed(2)}</span>
+              </div>
+            )}
+         </div>
+        <div className="mt-6 flex gap-3">
+           <button onClick={async () => {
+             try {
+               const res = await fetch(`http://localhost:5000/api/payment/receipt/order/${order._id}`);
+               if (!res.ok) throw new Error('No receipt');
+               const data = await res.json();
+               const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+               const url = URL.createObjectURL(blob);
+               const a = document.createElement('a');
+               a.href = url;
+               a.download = `order-${order._id}.json`;
+               document.body.appendChild(a);
+               a.click();
+               a.remove();
+               URL.revokeObjectURL(url);
+             } catch (err) {
+               console.error(err);
+             }
+           }} className="px-4 py-2 bg-white border rounded-lg">Download Receipt</button>
+        </div>
       </div>
 
     </div>

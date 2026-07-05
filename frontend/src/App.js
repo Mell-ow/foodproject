@@ -6,6 +6,7 @@ import CartDrawer from './components/CartDrawer';
 import Home from './pages/Home';
 import Menu from './pages/Menu';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import Checkout from './pages/Checkout';
 import OrderTracking from './pages/OrderTracking';
 import Profile from './pages/Profile';
@@ -13,6 +14,7 @@ import Reservation from './pages/Reservation';
 import NotFound from './pages/NotFound';
 
 import AdminDashboard from './pages/AdminDashboard';
+import AdminLogin from './pages/AdminLogin';
 
 export const UIContext = React.createContext({
   toggleCart: () => {},
@@ -34,11 +36,14 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/menu" element={<Menu />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/track/:orderId" element={<OrderTracking />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/reserve" element={<Reservation />} />
-            <Route path="/admin/*" element={<AdminDashboard />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>

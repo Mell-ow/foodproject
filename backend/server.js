@@ -14,6 +14,7 @@ const cartRoutes = require("./src/routes/cartRoutes");
 const orderRoutes = require("./src/routes/orderRoutes");
 const reservationRoutes = require("./src/routes/reservationRoutes");
 const paymentRoutes = require("./src/routes/paymentRoutes");
+const adminRoutes = require("./src/routes/adminRoutes");
 
 dotenv.config();
 
@@ -53,6 +54,7 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/order", orderRoutes);
 app.use("/api/reserve", reservationRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Socket Event Handlers
 io.on("connection", (socket) => {

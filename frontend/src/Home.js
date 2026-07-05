@@ -67,12 +67,12 @@ function Home({ menu, onAddToCart, onReserve, isReserving }) {
                   onClick={() => onChange("advance", value)}
                   className={form.advance === value ? "active" : ""}
                 >
-                  Rs. {value}
+                  ₹ {value}
                 </button>
               ))}
             </div>
 
-            <p className="advance-text">Advance: Rs. {form.advance}</p>
+            <p className="advance-text">Advance: ₹ {form.advance}</p>
             <button type="submit" disabled={isReserving}>
               {isReserving ? "Booking..." : "Book Table"}
             </button>
@@ -97,7 +97,7 @@ function Home({ menu, onAddToCart, onReserve, isReserving }) {
                 }}
               />
               <h3>{item.name}</h3>
-              <p className="price">Rs. {item.price}</p>
+              <p className="price">₹ {item.price}</p>
               <button type="button" onClick={() => onAddToCart(item.id)}>
                 Add to Cart
               </button>

@@ -18,12 +18,14 @@ const Checkout = () => {
 
   const subtotal = getTotalAmount();
   const taxes = subtotal * 0.05;
-  const deliveryCharge = orderType === 'delivery' ? 5.00 : 0;
+  const deliveryCharge = orderType === 'delivery' ? 50 : 0;
   const total = subtotal + taxes + deliveryCharge - discount;
 
   const handleApplyCoupon = () => {
     if (couponCode.toUpperCase() === 'ZAN10') {
-      setDiscount(subtotal * 0.10);
+      const couponDiscount = subtotal * 0.10;
+      setDiscount(couponDiscount);
+      setLoyaltyPoints(50); // Reset loyalty points when coupon applied
       toast.success('10% Discount Applied!');
     } else {
       toast.error('Invalid Coupon Code');
@@ -33,10 +35,12 @@ const Checkout = () => {
 
   const handleRedeemLoyalty = () => {
     if (loyaltyPoints >= 10) {
+      const maxDiscount = subtotal * 0.80; // Cap discount at 80% of subtotal
       const discountVal = Math.floor(loyaltyPoints / 10);
-      setDiscount(prev => prev + discountVal);
+      const newDiscount = Math.min(discountVal, maxDiscount);
+      setDiscount(newDiscount); // Replace, don't add
       setLoyaltyPoints(loyaltyPoints % 10);
-      toast.success(`Redeemed ${discountVal * 10} points for $${discountVal} off!`);
+      toast.success(`Redeemed ${discountVal * 10} points for ₹${newDiscount} off!`);
     } else {
       toast.error('Not enough points to redeem');
     }
@@ -116,13 +120,13 @@ const Checkout = () => {
              <h2 className="text-xl font-bold mb-4 font-outfit">Review Items</h2>
              <div className="space-y-4">
                {items.map(item => (
-                 <div key={item.menuItem._id} className="flex gap-4 items-center p-3 hover:bg-gray-50 rounded-xl transition-colors border border-transparent hover:border-gray-100">
-                    <img src={item.menuItem.image} alt="dish" className="w-16 h-16 rounded-lg object-cover" />
+                 <div key={item.id} className="flex gap-4 items-center p-3 hover:bg-gray-50 rounded-xl transition-colors border border-transparent hover:border-gray-100">
+                    <img src={item.image || 'https://via.placeholder.com/150'} alt="dish" className="w-16 h-16 rounded-lg object-cover" />
                     <div className="flex-1">
-                      <p className="font-bold text-gray-900">{item.menuItem.name}</p>
-                      <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                      <p className="font-bold text-gray-900">{item.name}</p>
+                      <p className="text-sm text-gray-500">Qty: {item.qty}</p>
                     </div>
-                    <p className="font-bold text-gray-900">${(item.menuItem.price * item.quantity).toFixed(2)}</p>
+                    <p className="font-bold text-gray-900">₹{(item.price * item.qty).toFixed(2)}</p>
                  </div>
                ))}
              </div>
@@ -136,16 +140,16 @@ const Checkout = () => {
             <h2 className="text-xl font-bold mb-6 font-outfit text-white">Payment Summary</h2>
             
             <div className="space-y-4 text-sm text-gray-300 mb-6">
-              <div className="flex justify-between"><span>Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
-              <div className="flex justify-between"><span>Taxes (5%)</span><span>${taxes.toFixed(2)}</span></div>
-              {orderType === 'delivery' && <div className="flex justify-between"><span>Delivery Fee</span><span>${deliveryCharge.toFixed(2)}</span></div>}
-              {discount > 0 && <div className="flex justify-between text-green-400 font-medium"><span>Discount Applied</span><span>-${discount.toFixed(2)}</span></div>}
+              <div className="flex justify-between"><span>Subtotal</span><span>₹{subtotal.toFixed(2)}</span></div>
+              <div className="flex justify-between"><span>Taxes (5%)</span><span>₹{taxes.toFixed(2)}</span></div>
+              {orderType === 'delivery' && <div className="flex justify-between"><span>Delivery Fee</span><span>₹{deliveryCharge.toFixed(2)}</span></div>}
+              {discount > 0 && <div className="flex justify-between text-green-400 font-medium"><span>Discount Applied</span><span>-₹{discount.toFixed(2)}</span></div>}
             </div>
 
             <div className="border-t border-gray-700 pt-4 mb-8">
               <div className="flex justify-between items-center">
                 <span className="text-lg text-white">Total</span>
-                <span className="text-3xl font-black text-primary-500 font-outfit">${Math.max(0, total).toFixed(2)}</span>
+                <span className="text-3xl font-black text-primary-500 font-outfit">₹{Math.max(0, total).toFixed(2)}</span>
               </div>
             </div>
 

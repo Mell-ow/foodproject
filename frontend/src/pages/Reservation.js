@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, Clock, Users, CreditCard, Utensils, CheckCircle, ArrowLeft, Download, Share2, Info, Lock, Smartphone, Banknote } from 'lucide-react';
 import toast from 'react-hot-toast';
 import axios from 'axios';
+import { io as ioClient } from 'socket.io-client';
 import { menuData } from '../data/menuData';
 
 // --- Constants ---
@@ -46,6 +47,30 @@ const Reservation = () => {
   const [reservationResult, setReservationResult] = useState(null);
 
   // --- API Calls ---
+
+  const reservationDataRef = useRef(reservationData);
+  useEffect(() => {
+    reservationDataRef.current = reservationData;
+  }, [reservationData]);
+
+  // Socket: listen for reservation updates so availability refreshes in real-time
+  useEffect(() => {
+    const socket = ioClient('http://localhost:5000');
+    socket.on('reservation-updated', (payload) => {
+      try {
+        const { date, timeSlot } = payload || {};
+        if (date === reservationDataRef.current.date && timeSlot === reservationDataRef.current.timeSlot) {
+          // refresh availability for current selected slot
+          axios.get(`http://localhost:5000/api/reserve/available-tables?date=${reservationDataRef.current.date}&time=${reservationDataRef.current.timeSlot}`)
+            .then(res => setAvailableTables(res.data.tables))
+            .catch(() => {});
+        }
+      } catch (err) {
+        // ignore
+      }
+    });
+    return () => socket.disconnect();
+  }, []);
 
   useEffect(() => {
     const fetchTables = async () => {
@@ -334,7 +359,7 @@ const Reservation = () => {
   );
 
   const renderStep2 = () => {
-    const preMenuTotal = reservationData.preBookedItems.reduce((acc, i) => acc + (i.price * i.quantity), 0);
+    const preMenuTotal = reservationData.preBookedItems.reduce((acc, i) => acc + (Number(i.price) || 0) * (Number(i.quantity) || 0), 0);
     const filteredMenu = activeCategory === "All" ? menuItems : menuItems.filter(i => i.category === activeCategory);
 
     return (
@@ -397,7 +422,7 @@ const Reservation = () => {
           <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-lg bg-gray-900 text-white p-4 rounded-3xl shadow-2xl flex items-center justify-between animate-slide-up z-50">
             <div>
               <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Pre-Order Total</p>
-              <p className="text-xl font-black">₹{preMenuTotal}</p>
+              <p className="text-xl font-black">₹{preMenuTotal.toFixed(2)}</p>
             </div>
             <button onClick={() => setStep(3)} className="bg-res-primary hover:bg-orange-600 px-8 py-3 rounded-2xl font-bold flex items-center gap-2 transition-all">
               Next Step <ArrowLeft className="rotate-180" size={18}/>
@@ -409,7 +434,7 @@ const Reservation = () => {
   };
 
   const renderStep3 = () => {
-    const preMenuTotal = reservationData.preBookedItems.reduce((acc, i) => acc + (i.price * i.quantity), 0);
+    const preMenuTotal = reservationData.preBookedItems.reduce((acc, i) => acc + (Number(i.price) || 0) * (Number(i.quantity) || 0), 0);
     const selectedPkg = PACKAGES.find(p => p.id === reservationData.packageId);
 
     return (
@@ -438,12 +463,12 @@ const Reservation = () => {
                   {reservationData.preBookedItems.map(i => (
                     <div key={i.menuItemId} className="flex justify-between text-sm">
                       <span className="text-gray-500">{i.quantity}x {i.name}</span>
-                      <span className="font-bold text-gray-700">₹{i.price * i.quantity}</span>
+                      <span className="font-bold text-gray-700">₹{(Number(i.price) * Number(i.quantity)).toFixed(2)}</span>
                     </div>
                   ))}
                   <div className="flex justify-between pt-4 border-t border-dashed font-bold text-res-primary">
                     <span>Food Subtotal</span>
-                    <span>₹{preMenuTotal}</span>
+                    <span>₹{preMenuTotal.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -506,7 +531,7 @@ const Reservation = () => {
            <div className="flex flex-col sm:flex-row justify-between items-center gap-6">
               <div>
                  <p className="text-sm text-gray-400 font-medium">To be paid {paymentMethod === 'cash' ? 'at cafe' : 'now'}:</p>
-                 <h4 className="text-4xl font-black">₹{paymentMethod === 'cash' ? (preMenuTotal || 0) : (selectedPkg.amount + (preMenuTotal > 0 ? preMenuTotal : 0))}</h4>
+                 <h4 className="text-4xl font-black">₹{(paymentMethod === 'cash' ? (preMenuTotal || 0) : (selectedPkg.amount + (preMenuTotal > 0 ? preMenuTotal : 0))).toFixed(2)}</h4>
                  <p className="text-[10px] text-gray-500 mt-2">{paymentMethod === 'cash' ? '*Full amount paid at cafe on arrival' : '*Remaining balance settled at cafe'}</p>
               </div>
               <button
@@ -596,7 +621,26 @@ const Reservation = () => {
        </div>
 
        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-12">
-          <button className="bg-white border-2 border-gray-100 text-gray-700 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:border-res-primary hover:text-res-primary transition-all"><Download size={18}/> Receipt</button>
+          <button onClick={async () => {
+            try {
+              const id = reservationResult?.reservationId;
+              if (!id) return;
+              const res = await axios.get(`http://localhost:5000/api/payment/receipt/reservation/${id}`);
+              const data = JSON.stringify(res.data, null, 2);
+              const blob = new Blob([data], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `reservation-${id}.json`;
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              URL.revokeObjectURL(url);
+              toast.success('Receipt downloaded');
+            } catch (err) {
+              toast.error('Failed to download receipt');
+            }
+          }} className="bg-white border-2 border-gray-100 text-gray-700 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:border-res-primary hover:text-res-primary transition-all"><Download size={18}/> Receipt</button>
           <button className="bg-white border-2 border-orange-100 text-res-primary py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-orange-50 transition-all"><Share2 size={18}/> Share</button>
           <button onClick={() => window.location.reload()} className="bg-gray-900 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-black transition-all">New Booking</button>
        </div>
