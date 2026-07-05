@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { CheckCircle, Clock, ChefHat, Bike, Home, ArrowLeft } from 'lucide-react';
+import { API_BASE_URL, SOCKET_URL } from '../config/api';
 
 const STAGES = [
   { id: 'Order Placed', label: 'Order Placed', icon: Clock },
@@ -43,7 +44,7 @@ const OrderTracking = () => {
           setLoading(false);
           
           // Connect to Socket locally
-          socket = io('http://localhost:5000', { withCredentials: true });
+          socket = io(SOCKET_URL, { withCredentials: true });
           socket.emit('join-order', orderId);
 
           socket.on('status-update', (data) => {
@@ -195,7 +196,7 @@ const OrderTracking = () => {
         <div className="mt-6 flex gap-3">
            <button onClick={async () => {
              try {
-               const res = await fetch(`http://localhost:5000/api/payment/receipt/order/${order._id}`);
+               const res = await fetch(`${API_BASE_URL}/payment/receipt/order/${order._id}`);
                if (!res.ok) throw new Error('No receipt');
                const data = await res.json();
                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });

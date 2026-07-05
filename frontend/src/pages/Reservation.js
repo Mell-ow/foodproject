@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Calendar, Clock, Users, CreditCard, Utensils, CheckCircle, ArrowLeft, Download, Share2, Info, Lock, Smartphone, Banknote } from 'lucide-react';
+import { Calendar, Clock, Users, CreditCard, Utensils, CheckCircle, ArrowLeft, Download, Share2, Info, Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 import { io as ioClient } from 'socket.io-client';
 import { menuData } from '../data/menuData';
+import { API_BASE_URL, SOCKET_URL } from '../config/api';
 
 // --- Constants ---
 const PACKAGES = [
@@ -55,13 +56,13 @@ const Reservation = () => {
 
   // Socket: listen for reservation updates so availability refreshes in real-time
   useEffect(() => {
-    const socket = ioClient('http://localhost:5000');
+    const socket = ioClient(SOCKET_URL);
     socket.on('reservation-updated', (payload) => {
       try {
         const { date, timeSlot } = payload || {};
         if (date === reservationDataRef.current.date && timeSlot === reservationDataRef.current.timeSlot) {
           // refresh availability for current selected slot
-          axios.get(`http://localhost:5000/api/reserve/available-tables?date=${reservationDataRef.current.date}&time=${reservationDataRef.current.timeSlot}`)
+          axios.get(`${API_BASE_URL}/reserve/available-tables?date=${reservationDataRef.current.date}&time=${reservationDataRef.current.timeSlot}`)
             .then(res => setAvailableTables(res.data.tables))
             .catch(() => {});
         }
@@ -76,7 +77,7 @@ const Reservation = () => {
     const fetchTables = async () => {
       setIsLoading(true);
       try {
-        const res = await axios.get(`http://localhost:5000/api/reserve/available-tables?date=${reservationData.date}&time=${reservationData.timeSlot}`);
+        const res = await axios.get(`${API_BASE_URL}/reserve/available-tables?date=${reservationData.date}&time=${reservationData.timeSlot}`);
         setAvailableTables(res.data.tables);
       } catch (err) {
         // Backend offline — generate 10 local tables with some randomly reserved
@@ -138,10 +139,10 @@ const Reservation = () => {
     try {
       const pkg = PACKAGES.find(p => p.id === reservationData.packageId);
       // 1. Create Order
-      const { data: order } = await axios.post('http://localhost:5000/api/payment/create-order', { amount: pkg.amount });
+      const { data: order } = await axios.post(`${API_BASE_URL}/payment/create-order`, { amount: pkg.amount });
       
       // 2. Mock Razorpay Flow (Since we use mock keys in backend)
-      const { data: verification } = await axios.post('http://localhost:5000/api/payment/verify', {
+      const { data: verification } = await axios.post(`${API_BASE_URL}/payment/verify`, {
         razorpay_order_id: order.id,
         razorpay_payment_id: `pay_${Math.random().toString(36).substr(2, 9)}`,
         razorpay_signature: 'mock_signature'
@@ -149,7 +150,7 @@ const Reservation = () => {
 
       if (verification.message.includes('success')) {
         // 3. Create Reservation
-        const { data: final } = await axios.post('http://localhost:5000/api/reserve', {
+        const { data: final } = await axios.post(`${API_BASE_URL}/reserve`, {
           ...reservationData,
           advanceAmountPaid: pkg.amount,
           razorpayOrderId: order.id,
@@ -178,7 +179,7 @@ const Reservation = () => {
         ></div>
         {['Details', 'Menu', 'Payment', 'Done'].map((label, i) => {
           const s = i + 1;
-          const isDone = step > s || s === 4 && step === 4;
+          const isDone = step > s || (s === 4 && step === 4);
           const isActive = step === s;
           return (
             <div key={label} className="flex flex-col items-center">
@@ -625,7 +626,7 @@ const Reservation = () => {
             try {
               const id = reservationResult?.reservationId;
               if (!id) return;
-              const res = await axios.get(`http://localhost:5000/api/payment/receipt/reservation/${id}`);
+              const res = await axios.get(`${API_BASE_URL}/payment/receipt/reservation/${id}`);
               const data = JSON.stringify(res.data, null, 2);
               const blob = new Blob([data], { type: 'application/json' });
               const url = URL.createObjectURL(blob);
